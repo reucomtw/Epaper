@@ -4,26 +4,127 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>桃園社企中心電子報</title>
+    <style>
+        /* ===== RWD: 手機 & iPad 響應式樣式 ===== */
+
+        * { box-sizing: border-box; }
+
+        /* 內容表格最大寬度 */
+        .email-wrapper {
+            width: 100% !important;
+            max-width: 600px !important;
+        }
+
+        /* 確保所有圖片在小螢幕不溢出 */
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ---- iPad (max-width: 768px) ---- */
+        @media only screen and (max-width: 768px) {
+            table[width="600"] {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+        }
+
+        /* ---- 手機 (max-width: 480px) ---- */
+        @media only screen and (max-width: 480px) {
+            /* 主容器 */
+            table[width="600"],
+            .email-wrapper {
+                width: 100% !important;
+                max-width: 100% !important;
+                border-radius: 0 !important;
+            }
+
+            /* 外層背景去除側邊距 */
+            table[style*="padding: 20px 0"] {
+                padding: 0 !important;
+            }
+
+            /* 所有 td 的 30px 側邊距縮為 14px */
+            td.content-pad {
+                padding-left: 14px !important;
+                padding-right: 14px !important;
+            }
+
+            /* Header */
+            td.header-cell {
+                padding: 28px 14px !important;
+            }
+            h1.header-title {
+                font-size: 20px !important;
+                letter-spacing: 1px !important;
+            }
+            p.header-subtitle {
+                font-size: 14px !important;
+                letter-spacing: 2px !important;
+            }
+
+            /* 文章標題 */
+            h2.article-title {
+                font-size: 17px !important;
+            }
+            h3 {
+                font-size: 15px !important;
+            }
+
+            /* 卡片內距 */
+            .card-body {
+                padding: 14px !important;
+            }
+
+            /* 活動日期 badge */
+            .date-badge {
+                width: 48px !important;
+                font-size: 12px !important;
+            }
+
+            /* 追蹤提示 QR 區塊 */
+            .qr-cell {
+                width: 64px !important;
+                padding-left: 8px !important;
+            }
+            .qr-cell img {
+                width: 60px !important;
+                height: 60px !important;
+            }
+
+            /* Footer */
+            .footer-cell {
+                padding: 20px 14px !important;
+                font-size: 11px !important;
+            }
+
+            /* 一般圖片 */
+            img {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+        }
+    </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #F8F6F0; font-family: 'Helvetica Neue', Helvetica, Arial, 'Microsoft JhengHei', sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
 
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8F6F0; padding: 20px 0;">
         <tr>
-            <td align="center">
-                <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+            <td align="center" style="padding: 0 0;">
+                <table border="0" cellpadding="0" cellspacing="0" width="600" class="email-wrapper" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); width: 600px; max-width: 100%;">
 
                     <!-- 1. Header -->
                     <tr>
-                        <td align="center" style="background: linear-gradient(135deg, #7F00FF 0%, #D4AF37 100%); padding: 40px 20px; text-align: center;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; letter-spacing: 2px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.3);">桃園社企中心電子報</h1>
-                            <p style="color: #F3E5AB; margin: 10px 0 0 0; font-size: 18px; letter-spacing: 4px; font-weight: 500;">2026年 第二季電子報</p>
+                        <td align="center" class="header-cell" style="background: linear-gradient(135deg, #7F00FF 0%, #D4AF37 100%); padding: 40px 20px; text-align: center;">
+                            <h1 class="header-title" style="color: #ffffff; margin: 0; font-size: clamp(20px, 5vw, 28px); letter-spacing: 2px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.3);">桃園社企中心電子報</h1>
+                            <p class="header-subtitle" style="color: #F3E5AB; margin: 10px 0 0 0; font-size: clamp(14px, 4vw, 18px); letter-spacing: 4px; font-weight: 500;">2026年 第二季電子報</p>
                             <p style="color: #F3E5AB; margin: 10px 0 0 0; font-size: 9px; letter-spacing: 4px; font-weight: 500;">發稿日期 2026年6月12日</p>
                         </td>
                     </tr>
 
                     <!-- 2. 本期主題文章 -->
                     <tr>
-                        <td style="padding: 30px 30px 15px 30px;">
+                        <td class="content-pad" style="padding: 30px 30px 15px 30px;">
                             <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="background-color: #7F00FF; color: #ffffff; padding: 4px 12px; font-size: 13px; border-radius: 4px; font-weight: bold; letter-spacing: 1px;">本期主題文章</td>
@@ -89,7 +190,7 @@
 
                     <!-- 3. 社企暖心故事 -->
                     <tr>
-                        <td style="padding: 20px 30px 15px 30px;">
+                        <td class="content-pad" style="padding: 20px 30px 15px 30px;">
                             <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="background-color: #7F00FF; color: #ffffff; padding: 4px 12px; font-size: 13px; border-radius: 4px; font-weight: bold; letter-spacing: 1px;">社企暖心故事</td>
@@ -162,7 +263,7 @@
 
                     <!-- 4. 亮點活動 -->
                     <tr>
-                        <td style="padding: 20px 30px 15px 30px;">
+                        <td class="content-pad" style="padding: 20px 30px 15px 30px;">
                             <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="background-color: #7F00FF; color: #ffffff; padding: 4px 12px; font-size: 13px; border-radius: 4px; font-weight: bold; letter-spacing: 1px;">亮點活動</td>
@@ -226,7 +327,7 @@
 
                     <!-- 5. 活動快訊 -->
                     <tr>
-                        <td style="padding: 30px 30px 30px 30px; background-color: #FCFAF2;">
+                        <td class="content-pad" style="padding: 30px 30px 30px 30px; background-color: #FCFAF2;">
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
                                     <td>
@@ -287,7 +388,7 @@
 
                     <!-- ★ 活動預告（新增，放在 Footer 上方） -->
                     <tr>
-                        <td style="padding: 30px 30px 25px 30px;">
+                        <td class="content-pad" style="padding: 30px 30px 25px 30px;">
                             <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="background-color: #D4AF37; color: #ffffff; padding: 4px 12px; font-size: 13px; border-radius: 4px; font-weight: bold; letter-spacing: 1px;">活動預告</td>
@@ -417,7 +518,7 @@
                                                 <td style="vertical-align: middle; text-align: center;">
                                                     <p style="margin: 0; color: #ffffff; font-size: 14px; font-weight: bold; letter-spacing: 1px;">📣 相關活動請密切追蹤　<span style="font-size: 16px; letter-spacing: 2px;">桃青參一咖</span></p>
                                                 </td>
-                                                <td style="vertical-align: middle; text-align: center; width: 80px; padding-left: 14px;">
+                                                <td class="qr-cell" style="vertical-align: middle; text-align: center; width: 80px; padding-left: 14px;">
                                                     <img src="data:image/png;base64,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" alt="桃青參一咖 QR Code" width="72" style="width: 72px; height: 72px; display: block; border-radius: 6px; border: 3px solid #ffffff;">
                                                 </td>
                                             </tr>
@@ -439,7 +540,7 @@
 
                     <!-- Footer -->
                     <tr>
-                        <td style="background-color: #2A2A2A; padding: 30px 20px; text-align: center; color: #BBBBBB; font-size: 12px; line-height: 1.8;">
+                        <td class="footer-cell" style="background-color: #2A2A2A; padding: 30px 20px; text-align: center; color: #BBBBBB; font-size: 12px; line-height: 1.8;">
                             <p style="margin: 0; color: #ffffff; font-weight: bold; font-size: 14px;">桃園社企中心平鎮館</p>
                             <p style="margin: 5px 0 0 0;">服務時間：週一至週五 09:00 - 18:00</p>
                             <p style="margin: 5px 0 15px 0;">聯絡地址：桃園市平鎮區新富五街62號地下一層</p>
