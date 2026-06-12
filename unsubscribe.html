@@ -83,23 +83,41 @@
 <body>
   <main>
     <h1>取消訂閱</h1>
-    <p id="description">請確認或輸入要從桃園社企中心電子報名單中移除的電子郵件。</p>
+    <p>請確認或輸入要從桃園社企中心電子報名單中移除的電子郵件。</p>
 
     <label for="email">電子郵件</label>
     <input id="email" type="email" autocomplete="email" placeholder="your@email.com">
 
-    <button id="unsubscribeButton" type="button">送出取消訂閱</button>
-    <p id="message" class="message">頁面已就緒。</p>
+    <button id="unsubscribeButton" type="button" disabled>送出取消訂閱</button>
+    <p id="message" class="message">正在確認電子郵件請稍後</p>
   </main>
 
-  <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxTskG-QwbzW7DE6KhmnrlYXg-JJ7fYMLCWmjb19sb4ZBjA4GCrkrFaHSgdJxpCKEvatQ/exec';
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      serverTimestamp,
+      updateDoc
+    } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: 'PASTE_FIREBASE_WEB_API_KEY_HERE',
+      authDomain: 'epaper-71b93.firebaseapp.com',
+      projectId: 'epaper-71b93',
+      storageBucket: 'epaper-71b93.firebasestorage.app',
+      messagingSenderId: 'PASTE_MESSAGING_SENDER_ID_HERE',
+      appId: 'PASTE_FIREBASE_APP_ID_HERE'
+    };
 
     const params = new URLSearchParams(window.location.search);
-    const token = params.get('token') || '';
+    const token = (params.get('token') || '').trim();
     const emailInput = document.getElementById('email');
     const button = document.getElementById('unsubscribeButton');
     const message = document.getElementById('message');
+
+    let recipientRef = null;
     let tokenEmail = '';
     let userEditedEmail = false;
 
@@ -112,58 +130,60 @@
       message.className = isError ? 'message error' : 'message';
     }
 
-    function callBackend(action, onResult) {
-      const callbackName = 'unsubscribeCallback_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
-      const script = document.createElement('script');
-      const url = new URL(WEB_APP_URL);
-
-      window[callbackName] = function(result) {
-        delete window[callbackName];
-        script.remove();
-        onResult(result || {});
-      };
-
-      url.searchParams.set('action', action);
-      url.searchParams.set('token', token);
-      url.searchParams.set('email', emailInput.value.trim());
-      url.searchParams.set('callback', callbackName);
-
-      script.onerror = function() {
-        delete window[callbackName];
-        script.remove();
-        setMessage('連線失敗，請稍後再試。', true);
-        button.disabled = false;
-      };
-
-      script.src = url.toString();
-      document.body.appendChild(script);
-    }
-
-    if (token) {
-      setMessage('正在確認電子郵件請稍後', false);
-
-      callBackend('lookup', function(result) {
-        if (!result.ok) {
-          setMessage(result.message || '退訂連結無效，您仍可手動輸入電子郵件退訂。', true);
-          return;
-        }
-
-        tokenEmail = (result.email || '').trim().toLowerCase();
-
-        if (!userEditedEmail) {
-          emailInput.value = tokenEmail;
-        }
-
-        setMessage('請確認電子郵件，若有錯誤可修改後送出。', false);
+    function hasMissingFirebaseConfig() {
+      return Object.values(firebaseConfig).some(function(value) {
+        return String(value).indexOf('PASTE_') === 0;
       });
-    } else {
-      setMessage('請輸入電子郵件後送出。', false);
     }
 
-    button.addEventListener('click', function() {
+    async function loadRecipient() {
+      if (!token) {
+        setMessage('請從電子報中的取消訂閱連結進入。', true);
+        return;
+      }
+
+      if (hasMissingFirebaseConfig()) {
+        setMessage('Firebase 設定尚未完成，請先填入 firebaseConfig。', true);
+        return;
+      }
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      recipientRef = doc(db, 'recipients', token);
+
+      const snapshot = await getDoc(recipientRef);
+
+      if (!snapshot.exists()) {
+        setMessage('退訂連結無效或已經取消訂閱。', true);
+        return;
+      }
+
+      const data = snapshot.data();
+
+      if (data.status !== 'active') {
+        setMessage('此電子郵件已取消訂閱。', false);
+        return;
+      }
+
+      tokenEmail = String(data.email || '').trim().toLowerCase();
+
+      if (!userEditedEmail) {
+        emailInput.value = tokenEmail;
+      }
+
+      button.disabled = false;
+      setMessage('請確認電子郵件，若有錯誤可修改後送出。', false);
+    }
+
+    button.addEventListener('click', async function() {
       const currentEmail = emailInput.value.trim().toLowerCase();
 
-      if (!token && !currentEmail) {
+      if (!recipientRef) {
+        setMessage('退訂連結尚未載入完成，請稍後再試。', true);
+        return;
+      }
+
+      if (!currentEmail) {
         setMessage('請輸入電子郵件。', true);
         return;
       }
@@ -171,20 +191,25 @@
       button.disabled = true;
       setMessage('處理中...', false);
 
-      const canUseToken = token && (!currentEmail || currentEmail === tokenEmail);
-      const action = canUseToken ? 'unsubscribe' : 'unsubscribeByEmail';
+      try {
+        await updateDoc(recipientRef, {
+          email: currentEmail,
+          status: 'unsubscribed',
+          unsubscribedAt: serverTimestamp()
+        });
 
-      callBackend(action, function(result) {
-        if (!result.ok) {
-          button.disabled = false;
-          setMessage(result.message || '取消訂閱失敗，請稍後再試。', true);
-          return;
-        }
+        setMessage('已取消訂閱：' + currentEmail, false);
+      } catch (error) {
+        button.disabled = false;
+        setMessage('取消訂閱失敗，請稍後再試。', true);
+        console.error(error);
+      }
+    });
 
-        setMessage(result.message || ('已取消訂閱：' + (result.email || currentEmail)), false);
-      });
+    loadRecipient().catch(function(error) {
+      console.error(error);
+      setMessage('載入失敗，請稍後再試。', true);
     });
   </script>
 </body>
 </html>
-
