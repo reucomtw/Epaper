@@ -1,0 +1,83 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+  FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+  FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+  FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+  FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+  FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+  RECIPIENT_COLLECTION: recipients
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build static site
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf _site
+          mkdir -p _site
+
+          find . -maxdepth 1 -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' -o -name '*.svg' -o -name '*.ico' \) \
+            ! -name 'unsubscribe_page.template.html' \
+            -exec cp '{}' _site/ \;
+
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          template = Path("unsubscribe_page.template.html").read_text(encoding="utf-8")
+          replacements = {
+              "__FIREBASE_API_KEY__": os.environ["FIREBASE_API_KEY"],
+              "__FIREBASE_AUTH_DOMAIN__": os.environ["FIREBASE_AUTH_DOMAIN"],
+              "__FIREBASE_PROJECT_ID__": os.environ["FIREBASE_PROJECT_ID"],
+              "__FIREBASE_STORAGE_BUCKET__": os.environ["FIREBASE_STORAGE_BUCKET"],
+              "__FIREBASE_MESSAGING_SENDER_ID__": os.environ["FIREBASE_MESSAGING_SENDER_ID"],
+              "__FIREBASE_APP_ID__": os.environ["FIREBASE_APP_ID"],
+              "__RECIPIENT_COLLECTION__": os.environ["RECIPIENT_COLLECTION"],
+          }
+
+          for key, value in replacements.items():
+              if not value:
+                  raise SystemExit(f"Missing required environment value: {key}")
+              template = template.replace(key, value)
+
+          Path("_site/unsubscribe.html").write_text(template, encoding="utf-8")
+          PY
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
