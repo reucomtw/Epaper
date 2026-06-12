@@ -134,10 +134,10 @@
     }
 
     if (!token) {
-      description.textContent = '請輸入電子郵件，系統會寄出取消訂閱確認信。';
-      button.textContent = '寄送確認信';
+      description.textContent = '請輸入要從桃園社企中心電子報名單中移除的電子郵件。';
+      button.textContent = '送出取消訂閱';
       button.disabled = false;
-      setMessage('若您不是從電子報中的取消訂閱連結進入，請先完成 email 確認。', false);
+      setMessage('請輸入電子郵件後送出。', false);
     } else {
       emailInput.readOnly = true;
 
@@ -162,7 +162,7 @@
       button.disabled = true;
       setMessage('處理中...', false);
 
-      callBackend(token ? 'unsubscribe' : 'request', function(result) {
+      callBackend(token ? 'unsubscribe' : 'unsubscribeByEmail', function(result) {
         if (!result.ok) {
           button.disabled = false;
           setMessage(result.message || '取消訂閱失敗，請稍後再試。', true);
