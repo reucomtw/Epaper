@@ -103,13 +103,15 @@
     } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 
     const firebaseConfig = {
-      apiKey: 'PASTE_FIREBASE_WEB_API_KEY_HERE',
-      authDomain: 'epaper-71b93.firebaseapp.com',
-      projectId: 'epaper-71b93',
-      storageBucket: 'epaper-71b93.firebasestorage.app',
-      messagingSenderId: 'PASTE_MESSAGING_SENDER_ID_HERE',
-      appId: 'PASTE_FIREBASE_APP_ID_HERE'
+      apiKey: '__FIREBASE_API_KEY__',
+      authDomain: '__FIREBASE_AUTH_DOMAIN__',
+      projectId: '__FIREBASE_PROJECT_ID__',
+      storageBucket: '__FIREBASE_STORAGE_BUCKET__',
+      messagingSenderId: '__FIREBASE_MESSAGING_SENDER_ID__',
+      appId: '__FIREBASE_APP_ID__'
     };
+
+    const RECIPIENT_COLLECTION = '__RECIPIENT_COLLECTION__';
 
     const params = new URLSearchParams(window.location.search);
     const token = (params.get('token') || '').trim();
@@ -118,7 +120,6 @@
     const message = document.getElementById('message');
 
     let recipientRef = null;
-    let tokenEmail = '';
     let userEditedEmail = false;
 
     emailInput.addEventListener('input', function() {
@@ -132,7 +133,7 @@
 
     function hasMissingFirebaseConfig() {
       return Object.values(firebaseConfig).some(function(value) {
-        return String(value).indexOf('PASTE_') === 0;
+        return String(value).indexOf('__') === 0;
       });
     }
 
@@ -142,14 +143,14 @@
         return;
       }
 
-      if (hasMissingFirebaseConfig()) {
-        setMessage('Firebase 設定尚未完成，請先填入 firebaseConfig。', true);
+      if (hasMissingFirebaseConfig() || RECIPIENT_COLLECTION.indexOf('__') === 0) {
+        setMessage('Firebase 設定尚未完成。', true);
         return;
       }
 
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
-      recipientRef = doc(db, 'recipients', token);
+      recipientRef = doc(db, RECIPIENT_COLLECTION, token);
 
       const snapshot = await getDoc(recipientRef);
 
@@ -165,10 +166,8 @@
         return;
       }
 
-      tokenEmail = String(data.email || '').trim().toLowerCase();
-
       if (!userEditedEmail) {
-        emailInput.value = tokenEmail;
+        emailInput.value = String(data.email || '').trim().toLowerCase();
       }
 
       button.disabled = false;
