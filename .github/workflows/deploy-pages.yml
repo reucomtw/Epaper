@@ -50,26 +50,26 @@ jobs:
             -exec cp '{}' _site/ \;
 
           python - <<'PY'
-import os
-from pathlib import Path
+          import os
+          from pathlib import Path
 
-template = Path("unsubscribe_page.template.html").read_text(encoding="utf-8")
-replacements = {
-    "__FIREBASE_API_KEY__": os.environ["FIREBASE_API_KEY"],
-    "__FIREBASE_AUTH_DOMAIN__": os.environ["FIREBASE_AUTH_DOMAIN"],
-    "__FIREBASE_PROJECT_ID__": os.environ["FIREBASE_PROJECT_ID"],
-    "__FIREBASE_STORAGE_BUCKET__": os.environ["FIREBASE_STORAGE_BUCKET"],
-    "__FIREBASE_MESSAGING_SENDER_ID__": os.environ["FIREBASE_MESSAGING_SENDER_ID"],
-    "__FIREBASE_APP_ID__": os.environ["FIREBASE_APP_ID"],
-    "__RECIPIENT_COLLECTION__": os.environ["RECIPIENT_COLLECTION"],
-}
+          template = Path("unsubscribe_page.template.html").read_text(encoding="utf-8")
+          replacements = {
+              "__FIREBASE_API_KEY__": os.environ["FIREBASE_API_KEY"],
+              "__FIREBASE_AUTH_DOMAIN__": os.environ["FIREBASE_AUTH_DOMAIN"],
+              "__FIREBASE_PROJECT_ID__": os.environ["FIREBASE_PROJECT_ID"],
+              "__FIREBASE_STORAGE_BUCKET__": os.environ["FIREBASE_STORAGE_BUCKET"],
+              "__FIREBASE_MESSAGING_SENDER_ID__": os.environ["FIREBASE_MESSAGING_SENDER_ID"],
+              "__FIREBASE_APP_ID__": os.environ["FIREBASE_APP_ID"],
+              "__RECIPIENT_COLLECTION__": os.environ["RECIPIENT_COLLECTION"],
+          }
 
-for key, value in replacements.items():
-    if not value:
-        raise SystemExit(f"Missing required environment value: {key}")
-    template = template.replace(key, value)
+          for key, value in replacements.items():
+              if not value:
+                  raise SystemExit(f"Missing required environment value: {key}")
+              template = template.replace(key, value)
 
-Path("_site/unsubscribe.html").write_text(template, encoding="utf-8")
+          Path("_site/unsubscribe.html").write_text(template, encoding="utf-8")
 PY
 
       - name: Upload artifact
