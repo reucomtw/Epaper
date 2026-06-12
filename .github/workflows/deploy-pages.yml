@@ -70,7 +70,7 @@ jobs:
               template = template.replace(key, value)
 
           Path("_site/unsubscribe.html").write_text(template, encoding="utf-8")
-PY
+          PY
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
