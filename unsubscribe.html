@@ -101,6 +101,7 @@
     const button = document.getElementById('unsubscribeButton');
     const message = document.getElementById('message');
     const description = document.getElementById('description');
+    let tokenEmail = '';
 
     function setMessage(text, isError) {
       message.textContent = text;
@@ -139,17 +140,16 @@
       button.disabled = false;
       setMessage('請輸入電子郵件後送出。', false);
     } else {
-      emailInput.readOnly = true;
-
       callBackend('lookup', function(result) {
         if (!result.ok) {
           setMessage(result.message || '退訂連結無效或已經取消訂閱。', true);
           return;
         }
 
-        emailInput.value = result.email || '';
+        tokenEmail = result.email || '';
+        emailInput.value = tokenEmail;
         button.disabled = false;
-        setMessage('請確認電子郵件後送出。', false);
+        setMessage('請確認電子郵件，若有錯誤可修改後送出。', false);
       });
     }
 
@@ -162,7 +162,10 @@
       button.disabled = true;
       setMessage('處理中...', false);
 
-      callBackend(token ? 'unsubscribe' : 'unsubscribeByEmail', function(result) {
+      const currentEmail = emailInput.value.trim().toLowerCase();
+      const action = token && currentEmail === tokenEmail ? 'unsubscribe' : 'unsubscribeByEmail';
+
+      callBackend(action, function(result) {
         if (!result.ok) {
           button.disabled = false;
           setMessage(result.message || '取消訂閱失敗，請稍後再試。', true);
