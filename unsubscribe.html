@@ -83,10 +83,10 @@
 <body>
   <main>
     <h1>取消訂閱</h1>
-    <p>請確認要從桃園社企中心電子報名單中移除的電子郵件。</p>
+    <p id="description">請確認要從桃園社企中心電子報名單中移除的電子郵件。</p>
 
     <label for="email">電子郵件</label>
-    <input id="email" type="email" autocomplete="email" readonly>
+    <input id="email" type="email" autocomplete="email">
 
     <button id="unsubscribeButton" type="button" disabled>送出取消訂閱</button>
     <p id="message" class="message">載入中...</p>
@@ -100,6 +100,7 @@
     const emailInput = document.getElementById('email');
     const button = document.getElementById('unsubscribeButton');
     const message = document.getElementById('message');
+    const description = document.getElementById('description');
 
     function setMessage(text, isError) {
       message.textContent = text;
@@ -119,6 +120,7 @@
 
       url.searchParams.set('action', action);
       url.searchParams.set('token', token);
+      url.searchParams.set('email', emailInput.value.trim());
       url.searchParams.set('callback', callbackName);
 
       script.onerror = function() {
@@ -132,8 +134,13 @@
     }
 
     if (!token) {
-      setMessage('退訂連結缺少代碼，請確認您使用的是電子報中的完整連結。', true);
+      description.textContent = '請輸入電子郵件，系統會寄出取消訂閱確認信。';
+      button.textContent = '寄送確認信';
+      button.disabled = false;
+      setMessage('若您不是從電子報中的取消訂閱連結進入，請先完成 email 確認。', false);
     } else {
+      emailInput.readOnly = true;
+
       callBackend('lookup', function(result) {
         if (!result.ok) {
           setMessage(result.message || '退訂連結無效或已經取消訂閱。', true);
@@ -147,17 +154,22 @@
     }
 
     button.addEventListener('click', function() {
+      if (!token && !emailInput.value.trim()) {
+        setMessage('請輸入電子郵件。', true);
+        return;
+      }
+
       button.disabled = true;
       setMessage('處理中...', false);
 
-      callBackend('unsubscribe', function(result) {
+      callBackend(token ? 'unsubscribe' : 'request', function(result) {
         if (!result.ok) {
           button.disabled = false;
           setMessage(result.message || '取消訂閱失敗，請稍後再試。', true);
           return;
         }
 
-        setMessage('已取消訂閱：' + (result.email || emailInput.value), false);
+        setMessage(result.message || ('已取消訂閱：' + (result.email || emailInput.value)), false);
       });
     });
   </script>
