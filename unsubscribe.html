@@ -140,7 +140,7 @@
     }
 
     if (token) {
-      setMessage('正在背景載入電子郵件；您也可以直接輸入或修改後送出。', false);
+      setMessage('請輸入電子郵件後送出。', false);
 
       callBackend('lookup', function(result) {
         if (!result.ok) {
