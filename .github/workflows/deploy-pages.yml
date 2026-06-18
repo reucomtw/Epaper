@@ -32,10 +32,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Build static site
         shell: bash
@@ -49,34 +49,29 @@ jobs:
             ! -name 'unsubscribe_page.template.html' \
             -exec cp '{}' _site/ \;
 
-          python - <<'PY'
-          import os
-          from pathlib import Path
+          cp unsubscribe_page.template.html _site/unsubscribe.html
 
-          template = Path("unsubscribe_page.template.html").read_text(encoding="utf-8")
-          replacements = {
-              "__FIREBASE_API_KEY__": os.environ["FIREBASE_API_KEY"],
-              "__FIREBASE_AUTH_DOMAIN__": os.environ["FIREBASE_AUTH_DOMAIN"],
-              "__FIREBASE_PROJECT_ID__": os.environ["FIREBASE_PROJECT_ID"],
-              "__FIREBASE_STORAGE_BUCKET__": os.environ["FIREBASE_STORAGE_BUCKET"],
-              "__FIREBASE_MESSAGING_SENDER_ID__": os.environ["FIREBASE_MESSAGING_SENDER_ID"],
-              "__FIREBASE_APP_ID__": os.environ["FIREBASE_APP_ID"],
-              "__RECIPIENT_COLLECTION__": os.environ["RECIPIENT_COLLECTION"],
-          }
+          test -n "$FIREBASE_API_KEY"
+          test -n "$FIREBASE_AUTH_DOMAIN"
+          test -n "$FIREBASE_PROJECT_ID"
+          test -n "$FIREBASE_STORAGE_BUCKET"
+          test -n "$FIREBASE_MESSAGING_SENDER_ID"
+          test -n "$FIREBASE_APP_ID"
+          test -n "$RECIPIENT_COLLECTION"
 
-          for key, value in replacements.items():
-              if not value:
-                  raise SystemExit(f"Missing required environment value: {key}")
-              template = template.replace(key, value)
-
-          Path("_site/unsubscribe.html").write_text(template, encoding="utf-8")
-          PY
+          perl -0pi -e 's|__FIREBASE_API_KEY__|$ENV{FIREBASE_API_KEY}|g' _site/unsubscribe.html
+          perl -0pi -e 's|__FIREBASE_AUTH_DOMAIN__|$ENV{FIREBASE_AUTH_DOMAIN}|g' _site/unsubscribe.html
+          perl -0pi -e 's|__FIREBASE_PROJECT_ID__|$ENV{FIREBASE_PROJECT_ID}|g' _site/unsubscribe.html
+          perl -0pi -e 's|__FIREBASE_STORAGE_BUCKET__|$ENV{FIREBASE_STORAGE_BUCKET}|g' _site/unsubscribe.html
+          perl -0pi -e 's|__FIREBASE_MESSAGING_SENDER_ID__|$ENV{FIREBASE_MESSAGING_SENDER_ID}|g' _site/unsubscribe.html
+          perl -0pi -e 's|__FIREBASE_APP_ID__|$ENV{FIREBASE_APP_ID}|g' _site/unsubscribe.html
+          perl -0pi -e 's|__RECIPIENT_COLLECTION__|$ENV{RECIPIENT_COLLECTION}|g' _site/unsubscribe.html
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
